@@ -1,0 +1,175 @@
+<index>
+    <code>
+	JS2022051171 
+	JS2022051171
+	ŁM2022051171
+	</code>
+    <authors>
+        <author>Jakub Szymański - kierownik projektu, główny programista, specjalista technologii Blockchain w ujęciu Smart Contractów Ethereum/Hardhat</author>
+        <author>Jędrzej Sibiński - zastępca kierownika projektu, programista backend, regular Node JS/HTML developer</author>
+        <author>Łukasz Malinowski - beta-tester aplikacji</author>
+    </authors>
+    <author_count>3</author_count>
+    <name>Zdecentralizowana Giełda Kryptowalut</name>
+    <date>2022-05-14</date>
+    <version>1.17</version>
+    <function>
+        W programie użyte zostały głównie funkcje publiczne napisane przy użyciu standardu JSON-RPC. Protokół ten dzięki swej prostocie i kompaktowości pozwala definiować jedynie najbardziej użyteczne typy danych oraz występujące komendy. Pozwala on na niewymagające potwierdzenia powiadamianie serwera oraz możliwość wysyłania do serwera wielu wywołań niezależnie od czy kolejność wysyłki została zachowana czy nie.
+    </function>
+    <specification>
+	    Program ma za zadanie zabezpieczyć wymianę waluty PLN na kryptowalutę Ethereum. Wszystko oczywiście oparte jest o technologię Blockchain. Możliwy jest transfer walut innych niż PLN. Program umożliwia utrzymywanie depozytu majątku w systemie Blockchain, zapewniając bezpieczeństwo oraz pewność dokonywanych transakcji.
+    </specification>
+    <api>
+        <api_element>deposit - Funkcja ta umożliwia nam skorzystanie z depozytu, działa w następujący sposób: wpłacając na giełdę określoną ilość Ethereum, dostajemy za to odpowiednią, wyliczoną zasadami popytu i podaży ilość polskich złotych</api_element>
+        <api_element>withdraw - Funkcja ta umożliwia nam skorzystanie z tzw. withdraw'a a jej działanie jest następujące: po wpłacie określonej ilości waluty PLN poprzez Smart Contracty dostajemy określoną wartość kryptowaluty Ethereum</api_element>
+        <api_element>fallback - Domyślna funkcja używana w przypadku przekroczenia możliwości platformy. Przykładem takich działań może być płatność w niewspieranej walucie bądź błędy komunikacyjne serwera napotkane na drodze przesyłu transakcji</api_element>
+    </api>
+    <examples>
+        <example>function deposit() public payable</example>
+        <example>function withdraw(uint256 amount) public</example>
+    </examples>
+    <languages>
+        <language>Solidity -  jest to obietkowy język programowania do wdrażania inteligentnych kontraktów na różnych platformach blockchain, w szczególności Ethereum. Został opracowany przez Christiana Reitwiessnera, Alexa Beregszaszi i kilku byłych głównych współtwórców Ethereum </language>
+        <language>JavaScript - jest to skryptowy język programowania wysokiego poziomu. Cechuje się wieloparadygmatowością - można w nim programować obiektowo, funkcyjnie oraz imperatywnie. Posiada API przystosowane do pracy z tekstami, tablicami, datami czy wyrażeniami regularnymi </language>
+        <language>HTML - hipertekstowy język znaczników, wykorzystywany do tworzenia stron internetowych oraz edycji/umieszczania treści w nich obecnych </language>
+    </languages>
+    <technologies>
+        <technology>Hardhat - jest to środowisko programistyczne do kompilowania, wdrażania, testowania i debugowania oprogramowania opartego na Ethereum. Pomaga programistom zarządzać i automatyzować powtarzające się zadania, które są nieodłącznie związane z procesem budowania Smart Contractów, a także łatwo wprowadzać więcej funkcji w utworzonym systemie</technology>
+        <technology>Blockchain ETH -  zdecentralizowana platforma o otwartym oprogramowaniu, zbudowana na technologii blockchain i obsługująca znane pod nazwą Smart Contract kontrakty korzystające z technologii peer-to-peer oraz zdecentralizowane aplikacje. Główną walutą jest Ether (ETH), który umożliwia obrót transakcjami między użytkownikami oraz aplikacjami i uiszczania niezbędnych opłat wynikających z mocy obliczeniowej potrzebnej do obsłużenia tychże transakcji</technology>
+        <technology>Smart Contracts - program komputerowy lub protokół przeznaczony do cyfrowych umów, ich automatycznej weryfikacji, egzekwowania negocjacji lub dokumentowaniu prawnie istotnych zdarzeń zgodnie z warunkami tychże umów </technology>
+        <technology>Node JS -  multiplatformowe środowisko open-source umożliwiające tworzenie aplikacji typu server-side napisanych w języku JavaScript</technology>
+        <technology>Visual Studio - zintegrowane środowisko programistyczne firmy Microsoft. Jest używane do tworzenia oprogramowania konsolowego oraz z graficznym interfejsem użytkownika, w tym aplikacji Windows Forms, WPF, Web Sites, Web Applications</technology>
+        <technology>JSON RPC - to protokół zdalnego wywoływania procedur, który jest używany w Ethereum do definiowania rozmaitych struktur danych. Określa również zasady przetwarzania struktur danych w sieci. Ponieważ jako dane transportowe wykorzystuje obiekty JSON-a, można go używać do interakcji z węzłem ETH</technology>
+    </technologies>
+    <tests>
+        <test> 
+            beforeEach(async () => {
+                const Shares = await ethers.getContractFactory("Shares");
+                const WETH = await ethers.getContractFactory("PolishZloty");
+                const SimpleDEX = await ethers.getContractFactory("SimpleDEX");
+            
+                [owner, sharesDealerSC, addr1, addr2, ...addrs] = await ethers.getSigners();
+            
+                shares = await Shares.deploy("Shares", "SHA");
+                await shares.deployed();
+                wETH = await WETH.deploy("PolishZloty", "PLN");
+                await wETH.deployed();
+            
+                simpleDEX = await SimpleDEX.deploy(shares.address, wETH.address, "MalinXchange");
+                await simpleDEX.deployed();
+            
+                wETHMintingOwner_tx = await wETH.connect(owner).deposit({ value: ETHER[50] });
+                wETHMintingAddr1_tx = await wETH.connect(addr1).deposit({ value: ETHER[25] });
+                wETHMintingAddr1_tx = await wETH.connect(addr2).deposit({ value: ETHER[25] });
+            
+                sharesITO_tx = await shares.connect(owner).transfer(addr1.address, ETHER[25]);
+                sharesITO_tx = await shares.connect(owner).transfer(addr2.address, ETHER[25]);
+            });
+        </test>
+        <test>
+            describe("Test constructor()", function () {
+                it("PASS", async () => {
+                    expect(await wETH.balanceOf(owner.address)).equals(ETHER[50]);
+                    expect(await wETH.balanceOf(addr1.address)).equals(ETHER[25]);
+                    expect(await wETH.balanceOf(addr2.address)).equals(ETHER[25]);
+                    expect(await shares.balanceOf(owner.address)).equals(ETHER[50]);
+                    expect(await shares.balanceOf(addr1.address)).equals(ETHER[25]);
+                    expect(await shares.balanceOf(addr2.address)).equals(ETHER[25]);
+                });
+            });
+        </test>
+        <test>
+            describe("Test createOrder()", function () {
+                it("PASS - SELL", async () => {
+                    expect(await simpleDEX.getLengthOfOrdersArray()).equals(0);
+                    change_Tx = await simpleDEX.connect(owner).createOrder(1, ETHER[10], ETHER[10]);
+                    order_Tx = await simpleDEX.idToOrder(0);
+                    expect(order_Tx["orderId"]).equals(0);
+                    expect(order_Tx["maker"]).equals(owner.address);
+                    expect(order_Tx["side"]).equals(1);
+                    expect(order_Tx["sharesAmount"]).equals(ETHER[10]);
+                    expect(order_Tx["wETHAmount"]).equals(ETHER[10]);
+                    expect(order_Tx["isCompleted"]).equals(0);
+                    expect(order_Tx["orderCompletion"]).equals(0);
+                    expect(await simpleDEX.getLengthOfOrdersArray()).equals(1);
+                });
+            });
+        </test>
+        <test>
+            describe("Test completeOrder()", function () {
+                it("Fail - CompleteOrder 'NOT Created' should revert", async function () {
+                    await expect(simpleDEX.connect(addr1).completeOrder(1))
+                    .to.be.reverted;
+                });
+            
+                it("PASS - CompleteOrder 'OrderCreated' BUY", async function () {
+                    await wETH
+                        .connect(addr1)
+                        .approve(simpleDEX.address, ETHER[4]);
+                    expect(await wETH.allowance(addr1.address, simpleDEX.address)).equals(ETHER[4]);
+                    const TX_CreateOrder = await simpleDEX.connect(addr1).createOrder(0, ETHER[2], ETHER[4]);
+                    await shares
+                        .connect(addr2)
+                        .approve(simpleDEX.address, ETHER[2]);
+                    expect(await shares.allowance(addr2.address, simpleDEX.address)).equals(ETHER[2]);
+            
+                    const TX_CompleteOrder = await simpleDEX.connect(addr2).completeOrder(0);
+                    expect(await shares.balanceOf(addr1.address)).equals(ETHER[27]);
+                    expect(await shares.balanceOf(addr2.address)).equals(ETHER[23]);
+                    expect(await wETH.balanceOf(addr1.address)).equals(ETHER[21]);
+                    expect(await wETH.balanceOf(addr2.address)).equals(ETHER[29]);
+                });
+            
+                it("PASS - CompleteOrder 'OrderCreated' SELL", async function () {
+                    await shares
+                        .connect(addr1)
+                        .approve(simpleDEX.address, ETHER[4]);
+                    expect(await shares.allowance(addr1.address, simpleDEX.address)).equals(ETHER[4]);
+                    const TX_CreateOrder = await simpleDEX.connect(addr1).createOrder(1, ETHER[4], ETHER[5]);
+                    await wETH
+                        .connect(addr2)
+                        .approve(simpleDEX.address, ETHER[5]);
+                    expect(await wETH.allowance(addr2.address, simpleDEX.address)).equals(ETHER[5]);
+                
+                    const TX_CompleteOrder = await simpleDEX.connect(addr2).completeOrder(0);
+                
+                    expect(await shares.balanceOf(addr1.address)).equals(ETHER[21]);
+                    expect(await shares.balanceOf(addr2.address)).equals(ETHER[29]);
+                    expect(await wETH.balanceOf(addr1.address)).equals(ETHER[30]);
+                    expect(await wETH.balanceOf(addr2.address)).equals(ETHER[20]);
+                    expect(await simpleDEX.getLengthOfOrdersArray()).equals(0);
+                });
+            
+                it("PASS - CompleteOrder 'OrderCreated' SELL 'Multiple Orders'", async function () {
+                    await shares
+                        .connect(addr1)
+                        .approve(simpleDEX.address, ETHER[10]);
+                    expect(await shares.allowance(addr1.address, simpleDEX.address)).equals(ETHER[10]);
+                    const TX_CreateOrder = await simpleDEX.connect(addr1).createOrder(1, ETHER[4], ETHER[5]);
+                    const TX_CreateOrder1 = await simpleDEX.connect(addr1).createOrder(1, ETHER[2], ETHER[3]);
+                    const TX_CreateOrder2 = await simpleDEX.connect(addr1).createOrder(1, ETHER[3], ETHER[4]);
+                    const TX_CreateOrder3 = await simpleDEX.connect(addr1).createOrder(1, ETHER[4], ETHER[6]);
+                    await wETH
+                        .connect(addr2)
+                        .approve(simpleDEX.address, ETHER[12]);
+                    expect(await wETH.allowance(addr2.address, simpleDEX.address)).equals(ETHER[12]);
+                
+                    const TX_CompleteOrder = await simpleDEX.connect(addr2).completeOrder(0);
+                    I = await simpleDEX.getLengthOfOrdersArray();
+                
+                    const TX_CompleteOrder1 = await simpleDEX.connect(addr2).completeOrder(0);
+                    //console.log("1");
+                    const TX_CreateOrder4 = await simpleDEX.connect(addr1).createOrder(1, ETHER[2], ETHER[3]);
+                    expect(await shares.balanceOf(addr1.address)).equals(ETHER[17]);
+                    expect(await shares.balanceOf(addr2.address)).equals(ETHER[33]);
+                    expect(await wETH.balanceOf(addr1.address)).equals(ETHER[36]);
+                    expect(await wETH.balanceOf(addr2.address)).equals(ETHER[14]);
+                    expect(await simpleDEX.getLengthOfOrdersArray()).equals(3);
+                });
+            });
+        </test>
+    </tests>
+    <supported>1</supported>
+    <address>https://github.com/JSzymanskiJS/DEX_zaliczenie</address>
+    <notes>Program wykonany został podczas VI semestru studiów niestacjonarnych na kierunku informatyka na Politechnice Koszalińskiej w ramach przedmiotu "Zastosowania programowania komponentowego". Został wykonany z dbałością o szczegóły oraz przy wykorzystaniu najnowszych oraz najbardziej prestiżowych technologii używanych na rynku informatycznym.</notes>
+</index>
